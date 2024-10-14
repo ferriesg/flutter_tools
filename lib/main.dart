@@ -1,11 +1,14 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'myself/myself.dart';
+import 'homepage/home_page.dart';
 
 void main() {
   runApp(MyApp());
 }
 
+// 基础设置
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -14,232 +17,63 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'Namer App',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        ),
-        home: MyHomePage(),
-      ),
+          title: 'Namer App',
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+          ),
+          home: DefaultTabController(
+              length: 3,
+              child: Scaffold(
+                appBar: AppBar(
+                  // 这里将 Namer App 换成一个 IconButton
+                  leading: IconButton(
+                    icon: Icon(Icons.menu), // 添加更多功能图标
+                    onPressed: () {
+                      // 图标点击时触发的操作
+                      print('Menu button pressed');
+                    },
+                  ),
+                  // 右侧添加一些功能图标
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        // 搜索按钮点击事件
+                        print('Search button pressed');
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.more_vert),
+                      onPressed: () {
+                        // 更多按钮点击事件
+                        print('More button pressed');
+                      },
+                    ),
+                  ],
+                ),
+                body: TabBarView(children: [
+                  HomePage(),
+                  Myself(),
+                  Myself(),
+                ]),
+                bottomNavigationBar: const TabBar(
+                  tabs: [
+                    Tab(icon: Icon(Icons.home)),
+                    Tab(icon: Icon(Icons.waves)),
+                    Tab(icon: Icon(Icons.person)),
+                  ],
+                  labelColor: Colors.black, // Tab 文字或图标的颜色
+                ),
+              ))),
     );
   }
 }
+
+
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
-  var favorites = <WordPair>[];
-  void toggleFavorites() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
-  }
 }
 
-// class MyHomePage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     var appState = context.watch<MyAppState>();
-//     var pair = appState.current;
-//     IconData icon;
-//     if(appState.favorites.contains(pair)){
-//       icon = Icons.favorite;
-//     }else{
-//       icon = Icons.favorite_border;
-//     }
-//     return Scaffold(
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             BigCard(pair: pair),
-//             SizedBox(height: 10),
-//             Row(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 ElevatedButton.icon(
-//                     onPressed: () {
-//                       appState.toggleFavorites();
-//                       print(appState.favorites);
-//                     },
-//                     icon: Icon(icon),
-//                     label: Text('Like')),
-//                 SizedBox(width: 16),
-//                 ElevatedButton(
-//                     onPressed: () {
-//                       print('button pressed');
-//                       appState.getNext();
-//                     },
-//                     child: Text('Next')),
-//               ],
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-// ...
 
-class MyHomePage extends StatefulWidget {
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  var selectedIndex = 0;
-  
-  @override
-  Widget build(BuildContext context) {
-    Widget page;
-    switch(selectedIndex){
-      case 0:
-        page = GeneratorPage();
-        break;
-      case 1:
-        page = Listpage();
-        break;
-      default:
-        throw UnimplementedError('no wedght');
-    }
-    return LayoutBuilder(
-      builder: (context,constraints) {
-        return Scaffold(
-          body: Row(
-            children: [
-              SafeArea(
-                child: NavigationRail(
-                  extended: constraints.maxWidth >= 600,
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.home),
-                      label: Text('Home'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.favorite),
-                      label: Text('Favorites'),
-                    ),
-                  ],
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: (value) {
-                    setState(() {
-                      selectedIndex = value;
-                    });
-                  },
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  child: page,
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-    );
-  }
-}
-
-class GeneratorPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          BigCard(pair: pair),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavorites();
-                },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class Listpage extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var messageList = appState.favorites;
-    print(messageList);
-    // TODO: implement build
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text('You have '
-              '${appState.favorites.length} favorites:'),
-        ),
-        for (var pair in appState.favorites)
-          ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text(pair.asLowerCase),
-          ),
-      ],
-    );
-  }
-}
-
-class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
-
-  final WordPair pair;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.displayMedium!.copyWith(
-      color: theme.colorScheme.onPrimary,
-    );
-    return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          pair.asLowerCase,
-          style: style,
-        ),
-      ),
-    );
-  }
-}
